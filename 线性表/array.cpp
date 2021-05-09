@@ -14,7 +14,7 @@ public:
             return 0;
         
         int index = 0;
-        for(int i = 1; i < arr.size(); ++i)
+        for(int i = 1; i < (int)arr.size(); ++i)
         {
             if (arr[index] != arr[i])
             {
@@ -55,7 +55,7 @@ public:
             return arr.size();
         
         int index = 2;
-        for(int i = 2; i < arr.size(); ++i)
+        for(int i = 2; i < (int)arr.size(); ++i)
         {
             if (arr[i] != arr[index - 2])
             {
@@ -190,7 +190,7 @@ public:
                 median_prev = temp;
         }
 
-        if ((len1 + len2) & 1 == 1)
+        if (((len1 + len2) & 1 )== 1)
         {
             return (double)median;
         }
@@ -207,7 +207,7 @@ public:
 */
     double soluation2(vector<int>& arr1, vector<int>& arr2)
     {
-
+        return 0.0;
     }
 };
 
@@ -268,9 +268,9 @@ public:
             return answer;
 
         bool isFind = false;
-        for (int i = 0; i < arr.size() -1; ++i)
+        for (int i = 0; i < (int)arr.size() -1; ++i)
         {
-            for (int j = i; j < arr.size(); ++j)
+            for (int j = i; j < (int)arr.size(); ++j)
             {
                 if (arr[i] + arr[j] == target)
                 {
@@ -299,12 +299,12 @@ public:
             return answer;
         
         unordered_map<int, int> elem;
-        for(int i = 0; i < arr.size(); ++i)
+        for(int i = 0; i < (int)arr.size(); ++i)
         {
             elem[arr[i]] = i+1;
         }
 
-        for (int i = 0; i < arr.size(); ++i)
+        for (int i = 0; i < (int)arr.size(); ++i)
         {
             int temp = target - arr[i];
             auto it = elem.find(temp);
@@ -389,7 +389,7 @@ public:
             return 0;
         
         int index = 0;
-        for(int i = 0; i < arr.size(); ++i)
+        for(int i = 0; i < (int)arr.size(); ++i)
         {
             if (arr[i] != target)
             {
@@ -522,17 +522,17 @@ public:
     {
         bool used[9];
 
-        for (int i = 0; i < arr.size(); ++i)
+        for (int i = 0; i < (int)arr.size(); ++i)
         {
             fill(used, used + 9, false);//检查行
-            for (int j = 0; j < arr[i].size(); ++j)
+            for (int j = 0; j < (int)arr[i].size(); ++j)
             {
                 if (!check(arr[i][j], used))
                     return false;
             }
 
             fill(used, used+9, false);//检查列
-            for (int j = 0; j < arr.size(); ++j)
+            for (int j = 0; j < (int)arr.size(); ++j)
             {
                 if(!check(arr[j][i], used))
                     return false;
@@ -590,7 +590,7 @@ public:
         
         int sum = 0;
 
-        for (int i = 1; i < arr.size() - 2; ++i)
+        for (int i = 1; i < (int)arr.size() - 2; ++i)
         {
             int max_left = 0;
             int max_right = 0;
@@ -599,7 +599,7 @@ public:
                 max_left = max_left > arr[j] ? max_left : arr[j];
             }
 
-            for (int j = i + 1; j < arr.size(); ++j)
+            for (int j = i + 1; j < (int)arr.size(); ++j)
             {
                 max_right = max_right > arr[j] ? max_right : arr[j];
             }
@@ -628,7 +628,7 @@ public:
         vector<int> max_right(arr.size(), 0);
         int sum = 0;
 
-        for(int i = 1; i < arr.size(); ++i)
+        for(int i = 1; i < (int)arr.size(); ++i)
         {
             max_left[0] = arr[0];
             //不是跟自身比较，而是跟自身的前一个比较，因为自身不包含在左边，这里可以和下面合并为一个迭代,
@@ -651,7 +651,7 @@ public:
             max_right[i] = max_right[i+1] > arr[i+1] ? max_right[i+1] : arr[i+1];
         }
 
-        for (int i = 1; i < arr.size() - 1; ++i)
+        for (int i = 1; i < (int)arr.size() - 1; ++i)
         {
             int temp = min(max_right[i], max_left[i]);
             if (temp > arr[i])
@@ -673,7 +673,7 @@ public:
         if (arr.size() < 2)
             return 0;
         int max = 0;
-        for (int i = 0; i < arr.size(); ++i)
+        for (int i = 0; i < (int)arr.size(); ++i)
         {
             if (arr[i] > arr[max])
                 max = i;
@@ -744,6 +744,263 @@ public:
     }
 };
 
+class PlusOne
+{
+/*题目：以一个数组代替一个数字，对其进行加1操作，返回得到的数组，【我觉得题目有缺陷，arr[0]该为何值也没说,正负两种情况*/
+public:
+    /*
+解法一:首先看首位是负数还是非负数,[0后面再接一个负数就很奇怪,一般要么直接是0,要么是02111这种],正数+1,负数则-1;
+        其次正数看最后是9还是非9,9的话变为0并前移一个,再看是不是9,一直到头或者一个不为9的数为止,对其+1;
+        负数的话处理的不是9,而是0,类似于9的处理效果,0变成9
+*/
+    void solution1(vector<int>& arr)
+    {
+        if (arr.empty())
+            return;
+
+        int size = arr.size();
+        if (arr[0] >= 0)
+        {
+            for (int i = size - 1; i >= 0; --i)
+            {
+                if (arr[i] == 9 && i != 0)
+                {
+                    arr[i] = 0;
+                }
+                else
+                {
+                    ++arr[i];
+                    return;
+                }
+            }
+        }
+        else
+        {
+            for (int i = size - 1; i >= 0; --i)
+            {
+                if (arr[i] == 0 && i != 0)
+                {
+                    arr[i] = 9;
+                }
+                else if (i == 0)
+                {
+                    ++arr[i];
+                    return;
+                }
+                else
+                {
+                    --arr[i];
+                    return;
+                }
+            }
+        }
+    }
+
+    /*
+解法二[也是标准解法]:首先标准解法认为数组里面的元素是 0 <= elem <= 9,也就是说当出现999这样的情况发生时
+    第一位必须是个位数,而不能是10,所以只能用到vector.insert了;[英文中digit就是0-9的数,还是中文博大精深]
+    解法也很简洁,也是标准的加法运算,直接相加,然后取余10就是当前位应该有的数,对10取除,则是需要进位的数,
+    当进位的数为0时就说明不需要再迭代了
+    两种解法的时间复杂度都是O(N),空间复杂度O(1)
+*/
+
+    void solution2(vector<int>& arr)
+    {
+        if (arr.empty())
+            return;
+
+        plusX(arr, 1);
+    }
+
+    void plusX(vector<int>& arr, int digit)
+    {
+        int temp = 0;
+
+        for (auto i = arr.rbegin(); i != arr.rend(); ++i)
+        {
+            temp = *i + digit;
+            *i = temp % 10;
+            temp /= 10;
+            if (temp == 0)
+                break;
+        }
+
+        if (temp > 0) //还大于0就说明还有需要进位,但是已经到头了,所以我们需要插入一个temp进去
+            arr.insert(arr.begin(), temp);
+    }
+};
+
+class ClimbStair
+{
+//题目:爬楼梯,你只能一次跨一步或者两步,那么到有n个楼梯的上面时,你有多少种方案?
+/*
+这是个典型的斐波那契额数列,如何分析得出的呢?假设到顶点一共有f(n)种,那么如何到N去呢,此时有两种一种是N-1跨一步,
+一种是N-2跨两步,也就是说不过过程如何,你最后一定到达N-1或者N-2这两个楼梯的一个,因此就有f(N) = f(N-1) + f(N-2);
+这样的函数关系不难得出.到达N-1有f(N-1)个方案,到达N-2有f(N-2)个方案.
+
+既然已知这样的函数关系,那么又该如何解决?要么递归,要么迭代
+*/
+public:
+/*方法一:递归,递归的程序很简单,给出边界条件即可,但是当N特别大时就会导致崩溃,所以要慎重使用递归
+        时间复杂度O(2^N) --->每展开一个fn就需要两个fn-1与fn-2,呈指数级别增长, 空间复杂度O(N)*/
+    int solution1(int n)
+    {
+        if (n == 0)
+            return 0;
+        if (n == 1)//上一个台阶只有一种
+            return 1;
+        if (n == 2)//上两个台阶可以一下跨2步,也可以跨两个1步,到f(3)就符合规律了,1+1+1,1+2,2+1,满足f(1)+f(2)
+            return 2;
+
+        return solution1(n - 1) + solution1(n - 2);
+    }
+
+/*方法二:迭代,递归与迭代基本上是可以互相转化的,迭代实现起来可能不是很让人看懂
+        时间复杂度O(N),空间复杂度O(1)*/
+    int solution2(int n)
+    {
+        int fn = 0;
+        int fn_1 = 1;
+        int fn_2 = 0;
+
+        for (int i = 1; i <= n; ++i)
+        {
+            fn = fn_1 + fn_2;
+            fn_2 = fn_1;
+            fn_1 = fn;
+        }
+
+        return fn;
+    }
+};
+
+class SetMatrixZeroes
+{
+/*将一个矩阵中含有0的行与列重置为0
+    2 5 6 9         0 0 6 9
+    4 0 7 1  --->   0 0 0 0
+    0 6 9 3         0 0 0 0
+*/
+public:
+/*
+这个题目还是很简单的，就是要使用利用布尔变量设置的标志位【我总是容易忘记这个特性】，难点在于如何降低空间复杂度
+解法一：也是空间复杂度最高的一个O(m*n),设置一个bool[m][n],嵌套迭代查询为0的项,将bool置为true,完后,重新迭代一次,将为true的
+        的行与列全部归0,实现很简单很易懂,空间复杂度最高
+解法二: 不申请这么大的bool矩阵,我们改进为存储为0项的行列二元数组,vector<pair<int,int>>形式,嵌套迭代并插入其中
+        而后,逐一访问并重置矩阵,在0项较少时空间复杂度很低,但是假设全部为0时,其空间复杂度还是为O(m*n),写法也是很简单
+解法三: 还是要使用bool变量，但是不适用m*n的大型矩阵，对所有的列用一个bool数组，对所有的行用一个bool数组
+        这样空间复杂度就降为O(m+n)
+*/
+
+    vector<vector<int>> solution1(vector<vector<int>> arr)
+    {
+        int row_size = arr.size();
+        int col_size = arr[0].size();
+
+        vector<bool> row_bool(row_size, false);
+        vector<bool> col_bool(col_size, false);
+
+        for (int row = 0; row < row_size; ++row)
+        {
+            for (int col = 0; col < col_size; ++col)
+            {
+                if (arr[row][col] == 0)
+                {
+                    row_bool[row] = true;
+                    col_bool[col] = true;
+                }
+            }
+        }
+
+        for (int row = 0; row < row_size; ++row)
+        {
+            for (int col = 0; col < col_size; ++col)
+            {
+                if (row_bool[row] || col_bool[col])
+                {
+                    arr[row][col] = 0;
+                }
+            }
+        }
+
+        return arr;
+    }
+/*
+解法四：那么还有没有一种耗用空间复杂度更低的手段呢？答案是有的，从上面就能知道，把所有等于0的项投影到row_bool与col_bool
+        上，根据这两个的真值去重置0，我们可以将这两个数组安排在第一行与第一列上，只要arr[i][j]为0，那么就将
+        第arr[i][0],arr[0][j]置为0，也就是说只需要这时候只需要遍历第一列，第一行的数字就知道要重置哪些列哪些行了。
+        但是在实际处理时会发现，假设原本没有0的第一行此时该如何处理？我们已经修改了第一行的数据，将其某个位置置为0，所以
+        在嵌套迭代重置0的时候，需要对第一行以及第一列分类讨论，1，如果第一行或者第一列原本没有0值，就不要对其重置 2，如果
+        本来就有0，才要对其重置。那么如何判断这个分类？答案就是需要对原来的未修改的第一行第一列都轮询一次，如果有0就要set
+        一个标志位
+*/
+    vector<vector<int>> solution2(vector<vector<int>> arr)
+    {
+        int row_size = arr.size();
+        int col_size = arr[0].size();
+        bool row_has_zero = false;
+        bool col_has_zero = false;
+
+        for (int col = 0; col < col_size; ++col)
+        {
+            if (arr[0][col] == 0)
+            {
+                row_has_zero = true;
+                break;
+            }
+        }
+
+        for (int row = 0; row < row_size; ++row)
+        {
+            if (arr[row][0] == 0)
+            {
+                col_has_zero = true;
+                break;
+            }
+        }
+
+        for (int row = 1; row < row_size; ++row)
+        {
+            for (int col = 1; col < col_size; ++col)
+            {
+                if (arr[row][col] == 0)
+                {
+                    arr[row][0] = 0;
+                    arr[0][col] = 0;
+                }
+            }
+        }
+
+        for (int row = 1; row < row_size; ++row)
+        {
+            for (int col = 1; col < col_size; ++col)
+            {
+                if (arr[0][col] == 0 || arr[row][0] == 0)
+                {
+                    arr[row][col] = 0;
+                }
+            }
+        }
+
+        if (row_has_zero)
+        {
+            for (int col = 0; col < col_size; ++col)
+            {
+                arr[0][col] = 0;
+            }
+        }
+
+        if (col_has_zero)
+        {
+            for (int row = 0; row < row_size; ++row)
+            {
+                arr[row][0] = 0;
+            }
+        }
+
+        return arr;
+    }
+};
 
 int main(int argc, char** argv)
 {
@@ -807,7 +1064,7 @@ int main(int argc, char** argv)
         {24,25,26,27,28,29},
         {30,31,32,33,34,35},
     };*/
-    vector<vector<int>> matix = {{1,2},{3,4}};
+    /*vector<vector<int>> matix = {{1,2},{3,4}};
     
     RotateImage().solution(matix);
     for(int i = 0; i < 6; ++i)
@@ -815,9 +1072,34 @@ int main(int argc, char** argv)
         for(auto s : matix[i])
             cout << s << " ";
         cout << endl;
+    }*/
+
+    /*vector<int> arr = {5,8,5,9,5,9};
+    PlusOne().solution2(arr);
+    for (auto s:arr)
+        cout << s;
+    cout << endl;*/
+
+    /*cout << ClimbStair().solution2(10) << endl;
+    cout << ClimbStair().solution1(10) << endl;*/
+
+    vector<vector<int>> arr = {
+        {2, 5, 6, 0},
+        {4, 0, 7, 1},
+        {6, 5, 9, 7}
+    };
+
+    vector<vector<int>> ret = SetMatrixZeroes().solution2(arr);
+    for (int i = 0; i < (int)ret.size(); ++i)
+    {
+        for (auto s:ret[i])
+        {
+            cout << s << " ";
+        }
+        cout << endl;
     }
 
-    return 0;
+        return 0;
 }
 
 
