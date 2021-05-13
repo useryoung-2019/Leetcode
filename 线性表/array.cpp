@@ -202,12 +202,60 @@ public:
 
 /*TODO：
 
-解法二：将两个序列分别取半(k/2)，如果A[k/2 - 1] < B[k/2-1] 那就说明A的前半部分就在整体k中，只可以跑去前半部分去考虑后半部分
-反之就说明B的前半部分在整体k中，如果刚好等于那就说明刚好取到，思路很清晰，但是代码需要使用递归，略显困难
+解法二：假设两个数列是size大小接近的常规升序数列[这样有利于思考]。A的大小为m,B的大小为n.,m+n为奇数吧,偶数要求两个,如出一辙
+       奇数的中间数就是 (m+n)/2[下标]，因此将AB两个数组分别查看第k/2个数即A[k/2-1] 和 B[k/2-1]这两个数
+       如果 A[k/2-1] < B[k/2-1], 也就是说B中第k/2个数大于A中的第k/2个数，所以第K个数肯定包含了A里面的k/2个数
+            -->这个时候就要将寻找范围缩小到A[k/2 ~ m-1]中，B还要继续观察，并且此时要查找的是第【K - k/2】个数，
+       如果 A[k/2-1] > B[k/2-1]，此时B的前k/2的数包含在合并数列中的第K个数的前面
+            -->这个时候范围缩小到B[k/2 ~ m-1]中，A还要继续观察，更新第K个数为第【K-k/2】
+       如果 A[k/2-1] = B[k/2-1], 就说明找对位置了,随便取哪个都可以
+
+       边界条件如何呢?
+       当 k/2 比其中一个m或者n大该如何? 此时直接取最后的数 A[m-1]或者B[n-1]
+       当 K=1 时,此时只需要比较A[k-1]与B[k-1]的大小,取最小值.
+       当 m=0或者n=0, 此时只需要B[n+K-1]或者A[m+K-1],出于程序简便的情况下,推荐将size小的数组决定k/2的最终大小[第一个
+       边界条件,如果k/2比m大,那就只能取m,那么B中就只能找前K-m个数]
+
+       时间复杂度O(log(m+n)),空间复杂度O（log（m+n））
 */
     double soluation2(vector<int>& arr1, vector<int>& arr2)
     {
-        return 0.0;
+        if (arr1.empty() || arr2.empty())
+            return 0.0;
+        int arr1_size = arr1.size();
+        int arr2_size = arr2.size();
+
+        if ((arr1_size + arr2_size) & 1)//奇数
+        {
+            return (double)getMedian(arr1.begin(), arr1_size, arr2.begin(), arr2_size, (arr1_size + arr2_size + 2)/2);
+        }
+        else
+        {
+            return (getMedian(arr1.begin(), arr1_size, arr2.begin(), arr2_size, (arr1_size + arr2_size + 2)/2) +
+                    getMedian(arr1.begin(), arr1_size, arr2.begin(), arr2_size, (arr1_size + arr2_size)/2))/2.0;
+        }
+
+    }
+
+    int getMedian(vector<int>::const_iterator arr1, int arr1_size, vector<int>::const_iterator arr2, int arr2_size, int k)
+    {
+        if (arr1_size > arr2_size)
+            return getMedian(arr2, arr2_size, arr1, arr1_size, k);
+
+        if (arr1_size == 0)
+            return *(arr2 + k - 1);
+        if (k == 1)
+            return min(*arr1, *arr2);
+        
+        int arr1_index = min(k/2, arr1_size);
+        int arr2_index = k - arr1_index;
+
+        if (*(arr1 + arr1_index - 1) < *(arr2 + arr2_index - 1))
+            return getMedian(arr1 + arr1_index, arr1_size - arr1_index, arr2, arr2_size, k - arr1_index);
+        else if (*(arr1 + arr1_index - 1) > *(arr2 + arr2_index - 1))
+            return getMedian(arr1, arr1_size, arr2 + arr2_index, arr2_size - arr2_index, k - arr2_index);
+        else
+            return *(arr1 + arr1_index - 1);
     }
 };
 
@@ -932,7 +980,7 @@ public:
         但是在实际处理时会发现，假设原本没有0的第一行此时该如何处理？我们已经修改了第一行的数据，将其某个位置置为0，所以
         在嵌套迭代重置0的时候，需要对第一行以及第一列分类讨论，1，如果第一行或者第一列原本没有0值，就不要对其重置 2，如果
         本来就有0，才要对其重置。那么如何判断这个分类？答案就是需要对原来的未修改的第一行第一列都轮询一次，如果有0就要set
-        一个标志位
+        一个标志位,上面这几个解法的时间复杂度都是O(m*n),但这个的空间复杂度为O(1)
 */
     vector<vector<int>> solution2(vector<vector<int>> arr)
     {
@@ -1002,6 +1050,198 @@ public:
     }
 };
 
+class GasStation
+{
+public:
+/*
+题目： 有一个环形的路，路上有N个汽油站，每个汽油站只能加gas[n],现在有一个小车没有气,但能无限存储汽油,
+    从某一个汽油站出发,并且已知的是,从汽油站i出发到汽油站i+1,油耗是cost[i]
+    要求返回能够走完整个环形的起始index,如果不能走完就要返回-1
+*/
+
+/*
+分析: 最先想到的是,一个站一个站的试,嵌套循环往里套,试出来就返回index,试不出来就返回-1,时间复杂度为O(N²)
+*/
+    int solution1(vector<int>& gas, vector<int>& cost)
+    {
+        int start = -1;
+        int size = gas.size();
+        int total_gas = 0;
+
+        for (int i = 0; i < size; ++i)//从0号开始
+        {
+            total_gas = 0;
+
+            for (int j = i; j < size; ++j)//开始的位置i -- > size-1
+            {
+                total_gas = total_gas + gas[j] - cost[j]; //在j处加油gas[j]，到j+1处耗费cost[j],只要有油就能到下一站
+                if (total_gas < 0) // 这里代表没有油，就说明从i出发不行，需要重新选i
+                {
+                    break;
+                }
+            }
+
+            if (total_gas < 0)
+            {
+                continue;
+            }
+
+            for (int j = 0; j < i; ++j)//这段是从0 -> i
+            {
+                total_gas = total_gas + gas[j] - cost[j];
+                if (total_gas < 0)
+                    break;
+            }
+
+            if (total_gas >= 0) // 里面的迭代完后如果还有剩余或者刚好够，那么就说明找到了起始位置
+            {
+                start = i;
+                break;
+            }
+        }
+
+        return start;
+    }
+
+/*
+解法二：其实还有个更微妙的解法,抛去一切问题,如何能让汽车走完一圈?耗油量 <= 加油量即可,也就是说如果gas的总数
+       小于cost的总数那么就无从说起.再看站点,假设站点0出发,存储的油与耗费的差值就是剩余油量,每到一个站点就
+       累加一次,arr[0]+arr[1]+arr[2]+...arr[i-1] >= 0 ,但在i站点出了问题,arr[0]+arr[1]+..arr[i] < 0,
+       那么就是说0~i的站点我们是可以到达的,但是i->i+1的剩余油就不够了.这句话透露出两个信息:
+       1. 0 ~ i 可以到达,并且出发时油量为0
+       2. i -> i+1 不可到达
+       那么就从i+1开始重新计算剩余油量,如果i+1->size-1又都不小于0的话,并且前提是总耗油<=总加油,那么就知道
+       从i+1出发,否则就说明返回值为-1.
+       这样分析下来,时间复杂度为O(N),空间复杂度为O(1)
+*/
+    int soluntion2(vector<int>& gas, vector<int>& cost)
+    {
+        int total_gas = 0;//计算总的剩余油量
+        int sum = 0;//计算剩余油量
+        int start = -1;
+        int size = gas.size();
+
+        for (int i = 0; i < size; ++i)
+        {
+            sum = sum + gas[i] + cost[i];
+            total_gas = total_gas + gas[i] + cost[i];
+
+            if (sum < 0)//0~i的部分没有问题
+            {
+                sum  = 0;
+                start = i + 1;
+            }
+        }
+
+        if (total_gas < 0)//总体>=0就说明没问题
+            start = -1;
+        
+        return start;
+    }
+
+};
+
+class Candy
+{
+/*N个孩纸，有各自的优先级，要求优先级比左右两个大的，糖果要多,每个孩纸最少要有一个，问最少要多少个糖果？*/
+
+public:
+/*
+这其实就是一个和左右两边比大小，但又不完全是
+首先对每个孩纸都给一个
+然后从左到右遍历，与自身元素的左边比较，如果自身比较大，那就在左边的基础上+1，否则就不改
+然后从右到左遍历，与自身元素的右边比较，如果自身比较大，就在（右边的基础上+1，或者自身的值）取max
+时间复杂度O(N),空间复杂度O(1)
+*/
+    int solution(vector<int>& rating)
+    {
+        int size = rating.size();
+        vector<int> candy(size, 1);
+
+        for (int i = 1; i < size; ++i)
+        {
+            if (rating[i] > rating[i-1])
+            {
+                candy[i] = candy[i-1] + 1;//比前面的大，那就比前面多给一个
+            }
+        }
+
+        for (int i = size - 2; i >= 0; --i)
+        {
+            if (rating[i] > rating[i+1])
+            {
+                candy[i] = max(candy[i+1] + 1, candy[i]);//比后面大，那就比后面多给一个或自己值【左到右已经比较过了，说不定已经有数了，所以必须取max】
+            }                                                //取max
+        }
+
+        int sum = 0;
+        for (auto s: candy)
+        {
+            sum += s;
+        }
+
+        return sum;
+    }
+};
+
+class SingleNumber
+{
+/*一个整数数组中，只有一个元素不重复，其余的均有一个复制体，求不重复的元素*/
+public:
+/*
+主要考查的是位运算中的异或【相同位异或为0，不同位异或为1】，自身与自身异或结果为0，值与0异或结果还是该值
+所以重复的值异或之后结果为0，最终就只剩下唯一没有重复的值
+时间复杂度O(N),空间复杂度O(N)
+*/
+    int solution(vector<int>& arr)
+    {
+        if (arr.empty())
+            return -1;
+
+        int value = arr[0];
+        for (int i = 1; i < (int)arr.size(); ++i)
+        {
+            value ^= arr[i];
+        }
+
+        return value;
+    }
+};
+
+class SingleNumberII
+{
+/*整数数组，其中只有一个元素出现一次，其余元素均出现3次，求出现一次的元素*/
+public:
+/*毫无疑问还是考位运算，但这个和偶数的不一样，假设7这个数字出现3次，其二进制为0111
+如果统计位上1出现的次数，出现了三个7时，那么对应位置出现的次数就为0333
+也就是说在数组内，统计其位上1的个数，一定都是3的倍数，只有几个位置会出现不是3的倍数情况
+那么不是3倍数的位置其实就是singlenumber的1的位置，就有如下解法
+*/
+
+    int solution(vector<int>& arr)
+    {
+        int size = sizeof(int) * 8;
+        int bitcount[size] = {0};//模拟32位或者64位,使用就要初始化[要有个好习惯]
+        int result = 0;
+
+        for (int i = 0; i < (int)arr.size(); ++i)
+        {
+            for (int j = 0; j < size; ++j)
+            {
+                bitcount[j] += ((arr[i] >> j) & 1); // &1就能得到最后一位
+            }                                       // 1100【2进制】就会变为 0011
+        }
+
+        for (int j = 0; j < size; ++j)
+        {
+            bitcount[j] %= 3;//抛弃所有3的倍数位，就会只剩下SingleNumber的倒序位
+            result += (bitcount[j] << j); // 左移就能得到每个位，将其相加就能得到对应的值
+        }
+
+        return result;
+    }
+};
+
 int main(int argc, char** argv)
 {
     //vector<int> arr = {0,1,2,2,3,4,5,6,6,7,7,7,8,8,8,9,10,10,10,10};
@@ -1011,9 +1251,9 @@ int main(int argc, char** argv)
     //cout << SearchinRotatedSortedArray().souluation(arr1, 6) << endl;
     //cout << SearchinRotatedSortedArray().souluation(arr1, 37) << endl;
 
-    //vector<int> arr1 = {1,3,5,7,9};
-    //vector<int> arr2 = {2,4,6,8};
-    //cout << MedianofTwoSortedArrays().soluation1(arr1, arr2) << endl;
+    vector<int> arr1 = {2,4,6,8};
+    vector<int> arr2 = {5};
+    cout << MedianofTwoSortedArrays().soluation2(arr1, arr2) << endl;
 
     //vector<int> arr1 = {9,7,8,14,10,1,14,3,5,8,9,3,10,7,4,9,4,12,1,10};
     //cout << LongestConsecutiveSequence().solution1(arr1) << endl;
@@ -1083,7 +1323,7 @@ int main(int argc, char** argv)
     /*cout << ClimbStair().solution2(10) << endl;
     cout << ClimbStair().solution1(10) << endl;*/
 
-    vector<vector<int>> arr = {
+    /*vector<vector<int>> arr = {
         {2, 5, 6, 0},
         {4, 0, 7, 1},
         {6, 5, 9, 7}
@@ -1097,9 +1337,18 @@ int main(int argc, char** argv)
             cout << s << " ";
         }
         cout << endl;
-    }
+    }*/
+    /*
+    vector<int> arr = {1,2,3,2};
+    cout << Candy().solution(arr) << endl;*/
+    /*
+    vector<int> arr = {7,4,10,4,7};
+    cout << SingleNumber().solution(arr) << endl;
 
-        return 0;
+    vector<int> arr1 = {7,5,12,5,12,7,12,5,13,7};
+    cout << SingleNumberII().solution(arr1) << endl;*/
+
+    return 0;
 }
 
 
