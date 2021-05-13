@@ -461,9 +461,8 @@ public:
             ptr = ptr->next;
         }
     }
-/*思路：先遍历一遍找出size，然后再遍历一次找到需要旋转的size-k位置，记录下节点位置以及后一个位置
-        后一个位置为最终链表的起始节点，size-k节点为最终节点
-        时间复杂度O(N)，空间复杂度O(1)
+/*思路：
+先遍历一遍找出size，然后再遍历一次找到需要旋转的size-k位置，记录下节点位置以及后一个位置，后一个位置为最终链表的起始节点，size-k节点为最终节点  时间复杂度O(N)，空间复杂度O(1)
 
 还有一种思路： 也是先遍历求size，然后将首尾相连，形成一个环，接着找到size-k位置，直接断掉也可以*/
     Listnode* solution(Listnode* head, int k)
@@ -519,6 +518,136 @@ public:
     }
 };
 
+class RemoveNthNodeFromEndofList
+{
+/*给一个链表，除去倒数第k个元素，并且返回链表的头节点，给出的k值保证是有效的并且要求一次完成*/
+public:
+    Listnode* l1;
+    RemoveNthNodeFromEndofList():l1(nullptr){}
+    void create()
+    {
+        l1 = new Listnode(1);
+        vector<int> arr = {2,3,4,5,6,7,8,9};
+        Listnode* ptr = l1;
+        for (auto s:arr)
+        {
+            ptr->next = new Listnode(s);
+            ptr = ptr->next;
+        }
+    }
+/*
+解法思路：关于链表的解法无非就几种：
+        1. 遍历找节点，最简单的暴力解法，对于链表尤其好用
+        2. 经典双指针解法，这种一般就应用在这类题目中，除去倒数第K个节点
+        3. 经典快慢指针，判断循环链表，找循环节点等等都可以用快慢指针
+
+        这个题目的要求就是尽量在一次遍历中完成，本来两次暴力遍历也能完成，题目要求的话，那就要考虑使用双指针的方法，找倒数第K个指针，那就让一个指针先走到顺数第K个节点，然后一个节点指向头结点，让两个节点同时走，先到链表末尾时，指向头结点的指针就指向倒数第K个节点，现在要删除这个节点，那就只需要直到倒数第K个节点的前一个即可。所以先让第一个指针走到顺数第K+1个节点就可以了，或者计数从第0个开始也行。具体实现都差不多,时间复杂度O(N) 空间复杂度O(1)
+*/
+    Listnode* solution(Listnode* head, int k)
+    {
+        if (head == nullptr)
+            return head;
+        
+        Listnode* quickptr = head;
+        Listnode* slowptr = head;
+        int count = 1;
+        while(count < k + 1)
+        {
+            quickptr = quickptr->next;
+            ++count;
+        }
+
+        while(quickptr->next != nullptr)
+        {
+            quickptr = quickptr->next;
+            slowptr = slowptr->next;
+        }
+
+        Listnode* temp = slowptr->next;
+        slowptr->next = temp->next;
+        temp->next = nullptr;
+
+        return head;
+    }
+
+    void test()
+    {
+        create();
+        Listnode* res = solution(l1, 5);
+        cout << __LINE__ << ":  ";
+        while(res != nullptr)
+        {
+            cout << res->val << " ";
+            res = res->next;
+        }
+        cout << endl;
+    }
+};
+
+class SwapNodesinPairs
+{
+/*交换链表中相邻的两个节点，不能只交换其值： 1->2->3->4->5    2->1->4->3->5*/
+public:
+    Listnode* l1;
+    SwapNodesinPairs():l1(nullptr){}
+    void create()
+    {
+        l1 = new Listnode(1);
+        vector<int> arr = {2,3,4,5,6,7,8,9};
+        Listnode* ptr = l1;
+        for (auto s:arr)
+        {
+            ptr->next = new Listnode(s);
+            ptr = ptr->next;
+        }
+    }
+
+/*思路：还是要用三个指针代表左右中间三个节点，其中右边与中间表示成对的两个，左边只是起到对换后上一个数对的尾节点，方便与新数对连接
+        时间复杂度O(N) 空间复杂度O(1)*/
+    Listnode* solution(Listnode* head)
+    {
+        if (head == nullptr || head->next == nullptr)
+            return head;
+        
+        Listnode result(0);
+        result.next = head;
+
+        Listnode* prev = &result;
+        Listnode* cur = prev->next;
+        Listnode* next = cur->next;
+
+        while (next != nullptr)
+        {
+            prev->next = next;
+            cur->next = next->next;
+            next->next = cur;
+
+            prev = cur;
+            cur = cur->next;
+            next = cur == nullptr ? cur : cur->next; // 有两种情况，第一种刚好偶数对，那么cur就为nullptr此时next无法赋值，会出现段错误，第二种奇数对，cur不为nullptr，此时next就可以赋值为cut->next
+        }
+        
+        return result.next;
+    }
+
+    void test()
+    {
+        create();
+        Listnode* res = solution(l1);
+        cout << __LINE__ << ":  ";
+        while(res != nullptr)
+        {
+            cout << res->val << " ";
+            res = res->next;
+        }
+        cout << endl;
+    }
+};
+
+class ReverseNodesinkGroup
+{
+
+};
 
 
 int main(int argc, char** argv)
@@ -530,6 +659,8 @@ int main(int argc, char** argv)
     RemoveDuplicatesfromSortedList().test();
     RemoveDuplicatesfromSortedListII().test();
     RotateList().test();
+    RemoveNthNodeFromEndofList().test();
+    SwapNodesinPairs().test();
     return 0;
 }
 
