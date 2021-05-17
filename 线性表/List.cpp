@@ -646,9 +646,92 @@ public:
 
 class ReverseNodesinkGroup
 {
+/*反转局部连续的K个节点，如果最后剩下的节点不够K个，那就不要对其排序，不允许交换节点的值，只允许对节点进行操作
+    1->2->3->4->5   k=2  2->1->4->3->5
+    1->2->3->4->5   k=3  3->2->1->4->5
+*/
+public:
+    Listnode* l1;
+    ReverseNodesinkGroup():l1(nullptr){}
+    void create()
+    {
+        l1 = new Listnode(1);
+        vector<int> arr = {2,3,4,5,6,7,8};
+        Listnode* ptr = l1;
+        for (auto s:arr)
+        {
+            ptr->next = new Listnode(s);
+            ptr = ptr->next;
+        }
+    }
 
+    Listnode* solution(Listnode* l, int k)
+    {
+        if (l == nullptr || l->next == nullptr || k < 1)
+            return l;
+        
+        Listnode head(0);
+        head.next = l;
+
+        Listnode* end = l;
+        Listnode* prev = &head;
+        while(end != nullptr)
+        {
+            for (int i = 1; i < k && end != nullptr; ++i) // k个或者到尾都要退出
+            {
+                end = end->next;
+            }
+
+            if (end == nullptr)
+                break;//不足K个，不进行局部倒序
+
+            prev = reverseLocalList(prev, prev->next, end);
+            
+            end = prev->next;
+        }
+
+        return head.next;
+    }
+//函数返回的是局部排序后的倒数第一个节点位置
+    Listnode* reverseLocalList(Listnode* mark, Listnode* begin, Listnode* end)
+    {
+        Listnode* end_next = end->next;
+
+        for(Listnode* ptr = begin, *cur = begin->next, *next = cur->next; cur != end_next;
+            ptr = cur, cur = next, next = cur == nullptr ? cur : cur->next)
+            {
+                cur->next = ptr;
+            }
+
+        begin->next = end_next;
+        mark->next = end;//这里主要是为了将头结点连接到第一次未排序的尾节点上
+
+        return begin;
+    }
+
+    void test()
+    {
+        create();
+        Listnode* res = solution(l1, 3);
+        cout << __LINE__ << ":  ";
+        while(res != nullptr)
+        {
+            cout << res->val << " ";
+            res = res->next;
+        }
+        cout << endl;
+    }
 };
 
+class LinkedListCycle
+{
+/*判断是否循环，快慢指针就可以解决，当快慢指针相遇则说明一定循环*/
+};
+
+class LinkedListCycleII
+{
+/*找出循环点，快慢指针相遇时，另起一个从头结点出发的慢指针，让两个慢指针相遇即为循环点*/
+};
 
 int main(int argc, char** argv)
 {
@@ -661,6 +744,7 @@ int main(int argc, char** argv)
     RotateList().test();
     RemoveNthNodeFromEndofList().test();
     SwapNodesinPairs().test();
+    ReverseNodesinkGroup().test();
     return 0;
 }
 
